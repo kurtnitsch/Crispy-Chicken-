@@ -1,9 +1,9 @@
 # Crispy Chicken 🍗 - The OS for Autonomous AI Swarms
 
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![GitHub license](https://img.shields.io/badge/license-Apache2.0-blue.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/status-architectural%20alpha-orange.svg)](#status)
 [![Performance](https://img.shields.io/badge/performance-10x%20AI%20speedup-brightgreen)](#performance)
-[![Discord](https://img.shields.io/badge/join-discord-blueviolet)](https://discord.gg/invite-link)
+[![X Twitter](https://img.shields.io/badge/join-discord-blueviolet)](https://discord.gg/invite-link)
 
 **The revolutionary OS that collapses the traditional software stack for AI.** Crispy Chicken eliminates layers of abstraction to deliver unprecedented performance by fusing hardware capabilities with AI-native operations.
 
