@@ -1,0 +1,338 @@
+// CCOS kernel (COOP) + CrispyFS + FLOCK for ICP in Rust
+// NOTE: Direct hardware is not accessible on ICP. KIP is modeled as a
+// capability registry + off-chain worker callbacks (HTTP outcalls or oracle pattern).
+
+use candid::{CandidType, Deserialize, Principal};
+use ic_cdk::api::{management_canister::http_request::*, time};
+use ic_cdk::{init, post_upgrade, pre_upgrade, query, update};
+use ic_stable_structures::memory_manager::{MemoryId, MemoryManager, VirtualMemory};
+use ic_stable_structures::{storable::Bound, DefaultMemoryImpl, StableBTreeMap, Storable};
+use serde::{Deserialize as De, Serialize as Se};
+use serde_bytes::ByteBuf;
+use serde_json::{self, Value};
+use std::borrow::Cow;
+use base64::Engine;
+
+// ---------------- Types ----------------
+#[derive(Clone, Debug, CandidType, Deserialize, Se, De, PartialEq, Eq, PartialOrd, Ord)]
+pub struct GridPath {
+    pub x: i32,
+    pub y: i32,
+    pub z: i32
+}
+
+#[derive(Clone, Debug, CandidType, Deserialize, Se, De)]
+pub struct Meta {
+    pub energy: Option<f32>,
+    pub tags: Vec<String>,
+    pub ts: u64
+}
+
+#[derive(Clone, Debug, CandidType, Deserialize, Se, De)]
+pub struct FsValue {
+    pub data: ByteBuf,
+    pub meta: Meta
+}
+
+impl Storable for FsValue {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        Cow::Owned(candid::encode_one(self).unwrap())
+    }
+    fn from_bytes(b: Cow<[u8]>) -> Self {
+        candid::decode_one(&b).unwrap()
+    }
+    const BOUND: Bound = Bound::Unbounded;
+}
+
+#[derive(Clone, Debug, CandidType, Deserialize, Se, De, PartialEq, Eq, PartialOrd, Ord)]
+pub struct CapabilityId(pub String);
+
+impl Storable for CapabilityId {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        Cow::Owned(self.0.as_bytes().to_vec())
+    }
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        Self(String::from_utf8(bytes.to_vec()).unwrap())
+    }
+    const BOUND: Bound = Bound::Unbounded;
+}
+
+#[derive(Clone, Debug, CandidType, Deserialize, Se, De)]
+pub struct CapabilityManifest {
+    pub id: CapabilityId,
+    pub owner: Principal,
+    pub input_shape: (u32, u32),
+    pub output_shape: (u32, u32),
+    pub energy_budget_j: f32,
+    pub endpoint: String, // HTTP(s) endpoint of the off-chain worker
+    pub checksum: String, // expected code/data hash
+}
+
+impl Storable for CapabilityManifest {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        Cow::Owned(candid::encode_one(self).unwrap())
+    }
+    fn from_bytes(b: Cow<[u8]>) -> Self {
+        candid::decode_one(&b).unwrap()
+    }
+    const BOUND: Bound = Bound::Unbounded;
+}
+
+#[derive(Clone, Debug, CandidType, Deserialize, Se, De)]
+pub struct ZibbySpec {
+    pub capability: CapabilityId,
+    pub inputs: Vec<GridPath>,
+    pub output: GridPath,
+    pub energy_budget_j: f32,
+    pub correlation_id: Option<String>,
+}
+
+#[derive(Clone, Debug, CandidType, Deserialize, Se, De, PartialEq)]
+pub enum ZibbyStatus {
+    Pending,
+    Running,
+    Done,
+    Failed(String)
+}
+
+#[derive(Clone, Debug, CandidType, Deserialize, Se, De)]
+pub struct ZibbyInfo {
+    pub id: u64,
+    pub spec: ZibbySpec,
+    pub status: ZibbyStatus
+}
+
+impl Storable for ZibbyInfo {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        Cow::Owned(candid::encode_one(self).unwrap())
+    }
+    fn from_bytes(b: Cow<[u8]>) -> Self {
+        candid::decode_one(&b).unwrap()
+    }
+    const BOUND: Bound = Bound::Unbounded;
+}
+
+// ---------------- Stable State ----------------
+
+type Mem = VirtualMemory<DefaultMemoryImpl>;
+
+thread_local! {
+    static MEM_MGR: std::cell::RefCell<MemoryManager<DefaultMemoryImpl>> = std::cell::RefCell::new(MemoryManager::init(DefaultMemoryImpl::default()));
+
+    static FS: std::cell::RefCell<StableBTreeMap<(i32,i32,i32), FsValue, Mem>> = std::cell::RefCell::new(
+        StableBTreeMap::init(MEM_MGR.with(|m| m.borrow().get(MemoryId::new(0))))
+    );
+
+    static CAPA: std::cell::RefCell<StableBTreeMap<CapabilityId, CapabilityManifest, Mem>> = std::cell::RefCell::new(
+        StableBTreeMap::init(MEM_MGR.with(|m| m.borrow().get(MemoryId::new(1))))
+    );
+
+    static JOBS: std::cell::RefCell<StableBTreeMap<u64, ZibbyInfo, Mem>> = std::cell::RefCell::new(
+        StableBTreeMap::init(MEM_MGR.with(|m| m.borrow().get(MemoryId::new(2))))
+    );
+
+    static JOB_SEQ: std::cell::RefCell<u64> = std::cell::RefCell::new(0);
+}
+
+// ---------------- Lifecycle ----------------
+#[init]
+fn init() {}
+
+#[pre_upgrade]
+fn pre_upgrade() {}
+
+#[post_upgrade]
+fn post_upgrade() {}
+
+// ---------------- CrispyFS ----------------
+#[update]
+pub fn crispyfs_put(path: GridPath, data: Vec<u8>, tags: Vec<String>, energy: Option<f32>) {
+    let value = FsValue {
+        data: ByteBuf::from(data),
+        meta: Meta { energy, tags, ts: time() }
+    };
+    FS.with(|fs| fs.borrow_mut().insert((path.x, path.y, path.z), value));
+}
+
+#[query]
+pub fn crispyfs_get(path: GridPath) -> Option<FsValue> {
+    FS.with(|fs| fs.borrow().get(&(path.x, path.y, path.z)))
+}
+
+#[query]
+pub fn crispyfs_list(prefix: Option<(i32,i32)>) -> Vec<(GridPath, Meta)> {
+    FS.with(|fs| {
+        let fs = fs.borrow();
+        let mut out = vec![];
+        for kv in fs.iter() {
+            let ((x,y,z), v) = kv;
+            if let Some((px,py)) = prefix {
+                if x != px || y != py { continue; }
+            }
+            out.push((GridPath{ x, y, z }, v.meta.clone()));
+        }
+        out
+    })
+}
+
+// ---------------- Capability Registry (KIP manifest) ----------------
+#[update]
+pub fn register_capability(manifest: CapabilityManifest) {
+    assert_eq!(manifest.owner, ic_cdk::caller(), "owner must be caller");
+    CAPA.with(|c| {
+        c.borrow_mut().insert(manifest.id.clone(), manifest);
+    });
+}
+
+#[query]
+pub fn get_capability(id: CapabilityId) -> Option<CapabilityManifest> {
+    CAPA.with(|c| c.borrow().get(&id))
+}
+
+#[query]
+pub fn list_capabilities() -> Vec<CapabilityManifest> {
+    CAPA.with(|c| c.borrow().iter().map(|(_,v)| v.clone()).collect())
+}
+
+// ---------------- ZIBBY Scheduling ----------------
+#[update]
+pub async fn submit_zibby(spec: ZibbySpec) -> u64 {
+    // Validate capability + basic policy checks
+    let manifest = CAPA.with(|c| c.borrow().get(&spec.capability));
+    let m = manifest.expect("capability not found");
+    assert!(spec.energy_budget_j <= m.energy_budget_j, "energy budget exceeds capability");
+
+    // allocate job id
+    let id = JOB_SEQ.with(|s| {
+        let mut v = s.borrow_mut();
+        *v += 1;
+        *v
+    });
+    let info = ZibbyInfo { id, spec: spec.clone(), status: ZibbyStatus::Pending };
+    JOBS.with(|j| j.borrow_mut().insert(id, info));
+
+    // kick off async execution via HTTP outcall to the worker endpoint
+    // Worker receives input blobs (as base64), returns {ok, data, meta}
+    let payload = serde_json::json!({
+        "job_id": id,
+        "capability": m.id.0,
+        "inputs": spec.inputs.iter().map(|p| {
+            let v = FS.with(|fs| fs.borrow().get(&(p.x,p.y,p.z))).expect("missing input");
+            base64::engine::general_purpose::STANDARD.encode(&v.data)
+        }).collect::<Vec<_>>()
+    }).to_string().into_bytes();
+
+    // mark running
+    JOBS.with(|j| {
+        let mut jb = j.borrow_mut();
+        let mut cur = jb.get(&id).unwrap();
+        cur.status = ZibbyStatus::Running;
+        jb.insert(id, cur);
+    });
+
+    let request = HttpRequest {
+        url: m.endpoint.clone(),
+        method: HttpMethod::POST,
+        headers: vec![("Content-Type".to_string(), "application/json".to_string())],
+        body: payload,
+        max_response_bytes: Some(3_000_000),
+        transform: None,
+    };
+
+    let result = http_request(request).await;
+
+    match result {
+        Ok((response,)) => {
+            if response.status == 200 {
+                let body = response.body;
+                let v: Value = serde_json::from_slice(&body).unwrap_or_default();
+                if v.get("ok").and_then(|x| x.as_bool()).unwrap_or(false) {
+                    // commit result to FS
+                    let data_b64 = v.get("data").and_then(|x| x.as_str()).unwrap_or("");
+                    let data = base64::engine::general_purpose::STANDARD.decode(data_b64).unwrap_or_default();
+                    let tags = vec!["zibby".into(), m.id.0.clone()];
+                    crispyfs_put(spec.output.clone(), data, tags, Some(spec.energy_budget_j));
+                    // set done
+                    JOBS.with(|j| {
+                        let mut jb = j.borrow_mut();
+                        let mut cur = jb.get(&id).unwrap();
+                        cur.status = ZibbyStatus::Done;
+                        jb.insert(id, cur);
+                    });
+                } else {
+                    let msg = v.get("err").and_then(|x| x.as_str()).unwrap_or("worker error").to_string();
+                    mark_failed(id, msg);
+                }
+            } else {
+                mark_failed(id, format!("http status {}", response.status));
+            }
+        }
+        Err(e) => { mark_failed(id, format!("http outcall error: {:?}", e)); }
+    }
+
+    id
+}
+
+fn mark_failed(id: u64, msg: String) {
+    JOBS.with(|j| {
+        let mut jb = j.borrow_mut();
+        if let Some(mut cur) = jb.get(&id) {
+            cur.status = ZibbyStatus::Failed(msg);
+            jb.insert(id, cur);
+        }
+    });
+}
+
+#[query]
+pub fn poll_zibby(id: u64) -> Option<ZibbyInfo> {
+    JOBS.with(|j| j.borrow().get(&id))
+}
+
+// ---------------- FLOCK (Swarm orchestration) ----------------
+#[derive(Clone, Debug, CandidType, Deserialize, Se, De)]
+pub struct Agent {
+    pub id: String,
+    pub capability: CapabilityId,
+    pub weight_path: Option<GridPath>,
+    pub last_seen: u64,
+}
+
+thread_local! {
+    static AGENTS: std::cell::RefCell<Vec<Agent>> = std::cell::RefCell::new(vec![]);
+}
+
+#[update]
+pub fn flock_register(agent: Agent) {
+    AGENTS.with(|a| {
+        let mut v = a.borrow_mut();
+        let mut ag = agent;
+        ag.last_seen = time();
+        v.retain(|x| x.id != ag.id);
+        v.push(ag);
+    });
+}
+
+#[query]
+pub fn flock_agents() -> Vec<Agent> {
+    AGENTS.with(|a| a.borrow().clone())
+}
+
+#[update]
+pub fn flock_tick() -> usize {
+    // Governance policy: cull agents idle > 15 min
+    let now = time();
+    AGENTS.with(|a| {
+        let mut v = a.borrow_mut();
+        v.retain(|ag| now.saturating_sub(ag.last_seen) < 15 * 60 * 1_000_000_000);
+        v.len()
+    })
+}
+
+// ---------------- Farmer (human interface) ----------------
+#[query]
+pub fn health() -> String {
+    "ccos-ok".into()
+}
+
+// Candid export
+ic_cdk::export_candid!();
