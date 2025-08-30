@@ -1,0 +1,15 @@
+{
+  "dfx": "0.29.0",
+  "canisters": {
+    "ccos": {
+      "type": "rust",
+      "package": "ccos-canister"
+    }
+  },
+  "defaults": {
+    "build": {
+      "packtool": ""
+    }
+  },
+  "output_env_file": ".env"
+}
