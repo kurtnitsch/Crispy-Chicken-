@@ -17,13 +17,14 @@ Energy-blind scheduling
 
 File-based model loading delays
 
-```mermaid
-flowchart TD
+
     A[AI Application] --> B[Frameworks<br/>PyTorch / TensorFlow]
     B --> C[Compute APIs<br/>CUDA / ROCm / OpenCL]
     C --> D[General OS<br/>Linux / Windows / macOS]
     D --> E[BIOS/UEFI]
     E --> F[Hardware]
+
+
 ⚡️ Crispy Chicken OS (CCOS)
 One single layer between AI and hardware
 Energy-aware execution by default
