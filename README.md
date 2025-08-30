@@ -1,6 +1,13 @@
 Crispy Chicken 🍗 - OS for Autonomous AI Swarms
+# Crispy Chicken 🍗  
+**OS for Autonomous AI Swarms**  
 
-https://img.shields.io/badge/license-Apache%202.0-blue.svg https://img.shields.io/badge/status-alpha%20testing-orange.svg https://img.shields.io/badge/performance-4--6x%20faster-brightgreen.svg https://img.shields.io/badge/chat-on%20discord-blueviolet.svg https://img.shields.io/badge/built_on-Internet%20Computer-black.svg
+![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)  
+![Status](https://img.shields.io/badge/status-alpha%20testing-orange.svg)  
+![Performance](https://img.shields.io/badge/performance-4--6x%20faster-brightgreen.svg)  
+![Discord](https://img.shields.io/badge/chat-on%20discord-blueviolet.svg)  
+![Built on ICP](https://img.shields.io/badge/built_on-Internet%20Computer-black.svg)
+
 
 The operating system AI deserves—not the one it inherited.
 
