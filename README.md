@@ -6,7 +6,7 @@
 The Operating System for Autonomous AI Swarms
 
 ![Status](https://img.shields.io/badge/Stage-Alpha-red?style=for-the-badge)
-![AI-Native](https://img.shields.io/badge/AI-Native-OS-blueviolet?style=for-the-badge)
+(https://img.shields.io/badge/AI-Native-OS-blueviolet?style=for-the-badge)
 ![Performance](https://img.shields.io/badge/Performance-10x-green?style=for-the-badge)
 ![Swarm](https://img.shields.io/badge/Swarm-Autonomous-yellow?style=for-the-badge)
 >
