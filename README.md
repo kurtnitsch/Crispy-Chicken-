@@ -1,139 +1,213 @@
-# Crispy Chicken 🍗 - The OS for Autonomous AI Swarms
+Crispy Chicken 🍗 - The OS for Autonomous AI Swarms
 
-[![GitHub license](https://img.shields.io/badge/license-Apache2.0-blue.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/status-architectural%20alpha-orange.svg)](#status)
-[![Performance](https://img.shields.io/badge/performance-10x%20AI%20speedup-brightgreen)](#performance)
-[![X Twitter](https://img.shields.io/badge/join-discord-blueviolet)](https://discord.gg/invite-link)
+https://img.shields.io/badge/license-Apache2.0-blue.svg https://img.shields.io/badge/status-architectural%20alpha-orange.svg https://img.shields.io/badge/performance-10x%20AI%20speedup-brightgreen https://img.shields.io/badge/join-discord-blueviolet
 
-**The revolutionary OS that collapses the traditional software stack for AI.** Crispy Chicken eliminates layers of abstraction to deliver unprecedented performance by fusing hardware capabilities with AI-native operations.
+The revolutionary OS that collapses the traditional software stack for AI. Crispy Chicken eliminates layers of abstraction to deliver unprecedented performance by fusing hardware capabilities with AI-native operations.
 
 ---
 
-## 🔄 The Traditional AI Stack vs. CCOS Revolution
+🔄 The Traditional AI Stack vs. CCOS Revolution
 
-### 🐌 Traditional AI Stack (5 Layers of Abstraction)
+🐌 Traditional AI Stack (5 Layers of Abstraction)
+
 ```mermaid
 flowchart TD
-    A[Layer 5: AI App\n(Python/TypeScript)] -->|API Calls| B
-    B[Layer 4: AI Framework\n(PyTorch/TensorFlow)] -->|Compute Requests| C
-    C[Layer 3: Compute API\n(CUDA/ROCm)] -->|Driver Commands| D
-    D[Layer 2: General OS\n(Windows/Linux)] -->|Hardware Access| E
-    E[Layer 1: BIOS/UEFI] -->|Initialize| F[Hardware]
+    A[Layer 5: AI Application<br/>Python/TypeScript] -->|API Calls| B
+    subgraph B [Layer 4: AI Framework]
+        B1[PyTorch]
+        B2[TensorFlow]
+        B3[JAX]
+    end
+    
+    B -->|Compute Requests| C
+    subgraph C [Layer 3: Compute API]
+        C1[CUDA]
+        C2[ROCm]
+        C3[OpenCL]
+    end
+    
+    C -->|Driver Commands| D
+    subgraph D [Layer 2: General OS]
+        D1[Windows]
+        D2[Linux]
+        D3[macOS]
+    end
+    
+    D -->|Hardware Access| E[Layer 1: BIOS/UEFI]
+    E -->|Initialize| F[Hardware]
     
     classDef inefficient fill:#f96,stroke:#333,stroke-width:2px
     class A,B,C,D inefficient
 ```
 
-**Inefficiencies:**
-- 4 translation layers between AI and hardware
-- General-purpose OS unaware of AI requirements
-- Memory bottlenecks between CPU/GPU
-- Energy-agnostic scheduling
-- File-based model loading delays
+Inefficiencies:
 
-### ⚡️ Crispy Chicken Architecture (Radical Simplification)
+· 4 translation layers between AI and hardware
+· General-purpose OS unaware of AI requirements
+· Memory bottlenecks between CPU/GPU
+· Energy-agnostic scheduling
+· File-based model loading delays
+
+⚡️ Crispy Chicken Architecture (Radical Simplification)
+
 ```mermaid
 flowchart TD
-    A[FARMER\n(Human Interface)] -->|Native API| B
-    B[COOP Kernel & CrispyFS] -->|Direct Hardware Scheduling| C[KIP Driver]
+    A[FARMER<br/>Human Interface] -->|Native API| B
+    
+    subgraph B [CCOS Core]
+        B1[COOP Kernel]
+        B2[CrispyFS]
+        B3[FLOCK Manager]
+    end
+    
+    B -->|Direct Hardware Scheduling| C[KIP Driver]
     C -->|Capability Execution| D[Hardware]
     
     classDef efficient fill:#9f9,stroke:#333,stroke-width:2px
     class B,C efficient
+    
+    style A fill:#bbf
+    style D fill:#f9f
 ```
 
-**Revolutionary Advantages:**
-- Single layer between AI and hardware
-- Hardware capability-native scheduling
-- Direct 5D data access via CrispyFS
-- Energy-aware task execution
-- Swarm-native resource management
+Revolutionary Advantages:
+
+· Single layer between AI and hardware
+· Hardware capability-native scheduling
+· Direct 3D data access via CrispyFS
+· Energy-aware task execution
+· Swarm-native resource management
 
 ---
 
-## 🧠 CCOS Architecture Deep Dive
+🧠 CCOS Architecture Deep Dive
 
-### 🚀 The COOP Kernel & CrispyFS
-**Replaces:** Traditional OS + AI Framework + AI Application
+🚀 The COOP Kernel & CrispyFS
+
+Replaces: Traditional OS + AI Framework + AI Application
+
 ```mermaid
-flowchart LR
+flowchart TB
     COOP[COOP Kernel] -->|Manages| CrispyFS
-    COOP -->|Schedules| ZIBBYs
-    COOP -->|Orchestrates| FLOCK
-    CrispyFS -->|Stores| Models[Active Weights]
-    CrispyFS -->|Tracks| Energy[Energy Signatures]
+    COOP -->|Schedules| ZIBBYs[ZIBBY Execution Units]
+    COOP -->|Orchestrates| FLOCK[FLOCK Swarm Manager]
+    
+    subgraph CrispyFS [CrispyFS - 3D Data System]
+        direction LR
+        FS1[Model Weights<br/>x=10.5, y=-3.2, z=0]
+        FS2[Energy Signatures<br/>z=1, metadata=energy]
+        FS3[Swarm State<br/>x=5.1, y=2.8, z=2]
+    end
     
     class COOP kernel
     class CrispyFS database
 ```
 
-**Key Innovations:**
-- **Native 5D Data Access:** Models live at `(x,y,z,t,energy)` coordinates
-- **Capability-Based Scheduling:** Match ZIBBYs to hardware features
-- **Swarm Orchestration:** Manage FLOCKs of CHICKEN agents
-- **Active Weight Storage:** Models remain execution-ready
+Key Innovations:
 
-### ⚡️ KIP Driver (Knowledge & Instruction Processor)
-**Replaces:** CUDA/ROCm + Traditional GPU Drivers
+· Native 3D Data Access: Models live at (x,y,z) coordinates with metadata
+· Capability-Based Scheduling: Match ZIBBYs to hardware features
+· Swarm Orchestration: Manage FLOCKs of CHICKEN agents
+· Active Weight Storage: Models remain execution-ready
+
+⚡️ KIP Driver (Knowledge & Instruction Processor)
+
+Replaces: CUDA/ROCm + Traditional GPU Drivers
+
+Performance Equation:
+
 ```math
 \text{KIP Efficiency} = \frac{\text{Hardware Capabilities}}{\text{Abstraction Layers}} = \infty
 ```
 
-**Operation Workflow:**
-1. COOP identifies hardware capabilities
-2. Creates capability-specific ZIBBYs
-3. KIP executes ZIBBYs with direct hardware access
-4. Results stream directly into CrispyFS
+Operation Workflow:
 
-### 🔄 Traditional vs. CCOS AI Execution
+```mermaid
+sequenceDiagram
+    participant COOP as COOP Kernel
+    participant KIP as KIP Driver
+    participant HW as Hardware
+    
+    COOP->>KIP: Identify hardware capabilities
+    KIP-->>COOP: Return capability matrix
+    COOP->>KIP: Create capability-specific ZIBBY
+    KIP->>HW: Execute with direct hardware access
+    HW-->>KIP: Return results
+    KIP-->>COOP: Stream results to CrispyFS
+```
 
-| Phase               | Traditional Stack                     | CCOS Stack                          | Improvement |
-|---------------------|---------------------------------------|-------------------------------------|-------------|
-| **Model Loading**   | File read → RAM → VRAM (1.5s)         | Direct 5D access (0.05s)            | 30x         |
-| **Inference**       | Framework → CUDA → Driver (42ms/tok)  | Direct KIP execution (4ms/tok)      | 10x         |
-| **Energy Tracking** | External estimation                   | Native CrispyFS integration         | ∞           |
-| **Swarm Coordination** | Multiple IPC layers (1200ms)        | Native FLOCK management (85ms)      | 14x         |
+🔄 Traditional vs. CCOS AI Execution
+
+Phase Traditional Stack Time/Resource CCOS Stack Time/Resource Improvement
+Model Loading File read → RAM → VRAM 1.5s Direct 3D access 0.05s 30x
+Inference Framework → CUDA → Driver 42ms/tok Direct KIP execution 4ms/tok 10x
+Energy Tracking External estimation N/A Native CrispyFS integration Direct ∞
+Swarm Coordination Multiple IPC layers 1200ms Native FLOCK management 85ms 14x
 
 ---
 
-## 🧩 Hardware Integration Roadmap
+🧩 Hardware Integration Roadmap
 
-### 🚀 Current Implementation
+🚀 Current Implementation
+
 ```mermaid
 flowchart LR
     CCOS[CCOS Kernel] -->|KIP Driver| Sim[Hardware Simulator]
-    Sim --> CPU
-    Sim --> GPU
-    Sim --> RAM
+    
+    subgraph Sim [Simulation Layer]
+        direction TB
+        CPU[CPU Cores]
+        GPU[GPU Units]
+        RAM[Memory System]
+    end
     
     class CCOS kernel
+    class Sim simulation
 ```
 
-### 🔮 Future Vision
+🔮 Future Vision
+
 ```mermaid
-flowchart LR
-    CCOS[CCOS Kernel] -->|Direct KIP| Photonics[Photonic Chips]
-    CCOS -->|Direct KIP| ASIC[Specialized ASICs]
-    CCOS -->|Direct KIP| Neuro[Neuromorphic Hardware]
+flowchart TB
+    CCOS[CCOS Kernel] -->|Direct KIP| HW1[Photonic Chips]
+    CCOS -->|Direct KIP| HW2[Specialized ASICs]
+    CCOS -->|Direct KIP| HW3[Neuromorphic Hardware]
     
-    Photonics -->|Native| Waveguides
-    ASIC -->|Native| MatrixUnits
-    Neuro -->|Native| SpikingCores
+    subgraph HW1 [Photonic Architecture]
+        P1[Waveguides]
+        P2[Optical Matrix Units]
+        P3[Photonic Memory]
+    end
     
-    class Photonics,ASIC,Neuro physical
+    subgraph HW2 [ASIC Architecture]
+        A1[Matrix Units]
+        A2[Attention Engines]
+        A3[Tensor Cores]
+    end
+    
+    subgraph HW3 [Neuromorphic Architecture]
+        N1[Spiking Cores]
+        N2[Synaptic Arrays]
+        N3[Neural Fabric]
+    end
+    
+    class CCOS kernel
+    class HW1,HW2,HW3 physical
 ```
 
-**Revolutionary Integration:**
-- BIOS/UEFI replaced with CCOS bootloader
-- Hardware capabilities exposed at boot
-- KIP drivers generated for detected hardware
-- CrispyFS mapped directly to physical memory
+Revolutionary Integration:
+
+· BIOS/UEFI replaced with CCOS bootloader
+· Hardware capabilities exposed at boot
+· KIP drivers generated for detected hardware
+· CrispyFS mapped directly to physical memory
 
 ---
 
-## 🚀 Getting Started with CCOS Development
+🚀 Getting Started with CCOS Development
 
-### Simulated Hardware Environment
+Simulated Hardware Environment
+
 ```bash
 # Clone repository
 git clone https://github.com/crispy-chicken/ccos.git
@@ -146,7 +220,8 @@ python -m coop.boot --simulate=hybrid
 python -m farmer.console
 ```
 
-### Creating Your First ZIBBY
+Creating Your First ZIBBY
+
 ```python
 from crispy.kernel import ZIBBY, GridPath
 from crispy.kip import HardwareCapability
@@ -161,8 +236,8 @@ class MatrixMultiply(HardwareCapability):
         # Direct hardware access simulated
         return self.accelerator.mm(tensor_a, tensor_b)
 
-# Create 5D data path
-weight_path = GridPath(x=10.5, y=-3.2, z=0, time=1689347229, energy=0.75)
+# Create 3D data path
+weight_path = GridPath(x=10.5, y=-3.2, z=0)
 
 # Define inference ZIBBY
 inference_task = ZIBBY(
@@ -178,25 +253,26 @@ await inference_task.schedule()
 
 ---
 
-## 🧠 Why CCOS Matters for AI's Future
+🧠 Why CCOS Matters for AI's Future
 
-> "Traditional operating systems force AI to live in a human-shaped box. CCOS finally gives artificial intelligence an environment designed for its unique capabilities and needs - collapsing the abstraction barriers that have constrained AI development since its inception."
+"Traditional operating systems force AI to live in a human-shaped box. CCOS finally gives artificial intelligence an environment designed for its unique capabilities and needs - collapsing the abstraction barriers that have constrained AI development since its inception."
 
-**The CCOS Advantage:**
-- **10x Faster Inference:** By eliminating translation layers
-- **50x Faster Model Loading:** Through CrispyFS direct access
-- **Energy-Proportional AI:** Native Joules/token tracking
-- **Hardware Revolution:** Unified interface for diverse processors
-- **Swarm-Native Architecture:** FLOCK management at kernel level
+The CCOS Advantage:
 
----
-
-> "While others build AI on systems designed for spreadsheets and web browsers, we've created an OS where artificial intelligence is the native inhabitant. The age of AI-constrained-by-legacy is over."  
-> *The Crispy Chicken Manifesto*
+· 10x Faster Inference: By eliminating translation layers
+· 50x Faster Model Loading: Through CrispyFS direct access
+· Energy-Proportional AI: Native Joules/token tracking
+· Hardware Revolution: Unified interface for diverse processors
+· Swarm-Native Architecture: FLOCK management at kernel level
 
 ---
 
-## 🤝 Join the Revolution
+"While others build AI on systems designed for spreadsheets and web browsers, we've created an OS where artificial intelligence is the native inhabitant. The age of AI-constrained-by-legacy is over."
+The Crispy Chicken Manifesto
+
+---
+
+🤝 Join the Revolution
+
 Contribute to our GitHub repository, join our X community, and help build the first truly AI-native operating system:
-- [GitHub](https://github.com/crispy-chicken)
-  
+
